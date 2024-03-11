@@ -1,0 +1,1665 @@
+---
+title: "Supplemental Material: Online reach adjustments induced by real-time movement sonification"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+    number_sections: yes
+    latex_engine: pdflatex
+    keep_tex: yes
+header-includes:
+  - \usepackage[singlelinecheck=false]{caption}
+  - \usepackage{graphicx}
+  - \usepackage{subcaption}
+  - \usepackage{longtable}
+  - \usepackage{multicol}
+  - \usepackage{float}
+  - \renewcommand{\thetable}{ST\arabic{table}}
+  - \renewcommand{\thefigure}{SF\arabic{figure}}
+  - \renewcommand{\theequation}{SE\arabic{equation}}
+author: "Michael Barkasi$^{1\\text{,}2}$, Ambika Bansal$^{1}$, Björn Jörges$^{1}$, Laurence R. Harris$^{1}$"
+geometry: "left=1cm,right=1cm,top=1cm,bottom=2cm"
+date: "`r Sys.Date()`"
+---
+
+```{r initialization, include=FALSE}
+rm(list = ls()) # Clear project and start over
+
+print_all_R_output <- FALSE # Will generate a lot of output. Not used to produce published supplemental material. 
+
+# Packages for nice knitting of this document
+if(!require(knitr)) {
+    install.packages("knitr")
+    library(knitr)
+}
+if(!require(kableExtra)) {
+    install.packages("kableExtra")
+    library(kableExtra)
+}
+if(!require(ggplot2)) {
+    install.packages("ggplot2")
+    library(ggplot2)
+}
+if(!require(patchwork)) {
+    install.packages("patchwork")
+    library(patchwork)
+}
+if(!require(cowplot)) {
+    install.packages("cowplot")
+    library(cowplot)
+}
+if(!require(xtable)) {
+    install.packages("xtable")
+    library(xtable)
+}
+if(!require(gridExtra)) {
+    install.packages("gridExtra")
+    library(gridExtra)
+}
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(fig.pos = "H", out.extra = "", fig.align = 'center')
+
+if (print_all_R_output) {
+  #For line wrapping in print outs
+  hook_output = knit_hooks$get('output')
+  knit_hooks$set(output = function(x, options) {
+    # this hook is used only when the linewidth option is not NULL
+    if (!is.null(n <- options$linewidth)) {
+      x = xfun::split_lines(x)
+      # any lines wider than n should be wrapped
+      if (any(nchar(x) > n)) x = strwrap(x, width = n)
+      x = paste(x, collapse = '\n')
+    }
+    hook_output(x, options)
+  })
+  options(knitr.table.format = "html")
+} 
+
+start_time <- Sys.time()
+# For manual number of of sections and figures (used only if print_all_R_output = TRUE)
+sec_num <- 0
+subsec_num <- 0
+fig_num <- 0
+```
+
+\section*{Affiliations and Contact Information}
+
+1. Centre for Vision Research, York University, Toronto, Ontario, Canada
+2. Department of Philosophy and Philosophy-Neuroscience-Psychology, Washington University in St. Louis, St. Louis, Missouri, United States
+
+Corresponding author: Michael Barkasi, barkasi@wustl.edu
+
+\listoftables
+
+\listoffigures
+
+# Introduction
+
+```{r counter_intro}
+sec_num <- sec_num + 1
+subsec_num <- 0
+fig_num <- 0
+```
+
+This document contains the output of the R code used to analyze the data from the study "Online reach adjustments induced by real-time movement sonification". It contains supplemental plots, tables, and details on the analysis. It also contains the protocol script used for the study. Note that age and gender information has been removed from the public data. All public data, all R code, all C++ code for the sonification system, and the preprint manuscript are available at: [https://osf.io/pvwfm/](https://osf.io/pvwfm/).
+
+```{r R_project_setup, include=print_all_R_output}
+start_time_block <- Sys.time()
+
+# Begin by loading the necessary packages and data for the analysis, along with helper functions and basic constants and parameters of the data set. 
+public_data <- TRUE
+source("rs4_script_setup.R")
+
+removed_bad_rows <- FALSE # To ensure setup is always run before preprocessing. 
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+# Script
+
+```{r counter_script}
+sec_num <- sec_num + 1
+subsec_num <- 0
+fig_num <- 0
+```
+
+\begin{multicols}{2}
+The following script was used for all participants. 
+
+\begin{enumerate}
+
+  \item{} [Have participant sit in chair. Sign and date consent form.]
+  
+  \item{} \textbf{Welcome and Consent Form:} “Thank you for participating in our study today. This is the informed consent form. Please have a look over it. If you have any questions, please ask. Once you’re ready, please print your name [here], sign [here], and date [here]. Remember that, like any other study here, you can end the study at any time, for any reason, and still receive full credit for participating.” 
+  
+  \item{} \textbf{Explanation of Study:} “The purpose of our study is to investigate how sensory input is used to control movements, such as reaches. In everyday life, we use visual information to guide reaching movements. For example, I see the tracking marker on the table, and can reach out and gasp it. [demonstrate.] We can do something similar with sound. For a quick demo, please close your eyes. [Participant closes eyes.] Now, point in the direction you hear me tap. [Tap on left or right side of table.] Very good; that’s correct. Open your eyes. In this study, you’ll also be making reaches based on sound, but it will be different from that demo. It won’t be spatial sound. You won’t be pointing in the direct you hear the sound. The sound will just be coming from monostereo headphones. It won’t sound as if it’s coming from anywhere. Instead, you will be using the pitch and volume of the sound to guide your reaches. Instead of explaining how it works, I’ll show you in a demo we’ll do shortly. For now, I’ll just say that it sort of like an electronic instrument, such a Theremin.” 
+  
+  \item{} [Ask if they have questions.]
+  
+  \item{} “Okay, so, next I will explain how to make the reaches for the experiment. After that, we’ll get you set up with the sensors on your arms. Next, we’ll do the demo to explain the feedback, and finally the experiment itself. Just to warn you, the experiment will take about thirty-five minutes, and you will need to sit very still (aside from making reaches) through the whole thing.” 
+  
+  \item{} [Ask if they are right or left-handed. Have them pull the chair in towards the desk as close as it will go. Get into the initial position to demonstrate. Make reaches demonstrating each instruction.]
+  
+  \item{} \textbf{Explanation of Reach Mechanics:} “All reaches will start from this initial position, with your right (/left) arm parallel to your body. Each reach should have a well-defined end point. So, reach out, stop, pause, and return. You want to avoid reaching without a pause, avoid just going out and back without stopping. You also want to avoid waving or hunting behavior, as then there is no end point. Next, you want to make sure your reaches are nice and smooth. Avoid hesitations or pauses midway through. Finally, reach at a natural speed. Just as you wouldn’t go super slow were you reaching for something you see [like … this …], and you wouldn’t go super fast [like this!], you don’t want to go too slow or too fast during your reaches. The reason for these constraints is because the unit is always trying to estimate when you’ve started and stopped a reach. That’s why you need a well-defined end with a pause, why you don’t want to hesitate halfway through, and why you need to always come back to the same position. I have my non-reaching hand here as a reference point. [demonstrate] It should never move. It helps me find the initial position again. Note that you not only need to bring your forearm back to the same initial position, but you need to keep your whole upper body in that position as well. If you get out of position to stretch, you will probably not find the position again. You want to start in a relaxed, comfortable position. If you start with one posture sitting up straight, and then slouch, you will come out of the initial position. So, avoid an artificial posture and let yourself start in whatever feels relaxed and comfortable.” 
+  
+  \item{} [Attach sensors to arm with Velcro straps.]
+  
+  \item{} \textbf{Volume Warning:} “I have calibrated the volume so that it is at most 70dB. So, it cannot harm your hearing. However, if at any point the volume is uncomfortably loud, let me know and we can turn it down.” [Volume is lowered by turning knob on main sensor pod counter-clockwise; to adjust, it’s best to have the participant turn the knob themselves during the setup when the volume is playing at max level.] 
+  
+  \item{} \textbf{Demo Instructions (Initial):} “How the demo will work is that, when the unit is ready for you to make a reach, the sound will turn on. You will make a reach and return. After your reach the unit saves the data. It can take up to fifteen seconds, so give it some time. Once the data is saved, the sound should turn back on, and you can make another reach. For the first few reaches of the demo, there is no target and no feedback. You pick a random spot, anywhere you like, and reach for it. Just be sure to reach to different places each time.” 
+  
+  \item{} \textbf{Demo Instructions (Reach Five):} “Now on your next reach you will start to receive feedback. Make your reach and I will explain afterwards.” [If terminal feedback:] “… Make your reach and hold your hand at the end until I tell you return. Listen to the sounds that play.”
+  
+  \item{} \textbf{Demo Instructions (Explaining Feedback, Terminal):} “What you should have heard was that the sound stayed constant as you reached, then, at the end, two sounds played. First one sound with changing pitch and volume, a pause, then a second sound with rising pitch and constant, loud volume.” [Instruct participant to keep making reaches while explanation is given.] “Keep making reaches, and listen to how the first sound changes depending on your reach, while the second sound is always the same. Now, the basic idea is that you want to find the reach which makes the first sound match the second sound.” 
+  
+  \item{} \textbf{Demo Instructions (Explaining Feedback, Online):} “What you should have heard was that the sound changed as you reached, then, at the end, there was a pause, and a second sound played.” [Have them reach again, this time holding their hand out at the end, so they hear that the second sound plays no matter what, and isn’t the sound of them coming back.] “Keep making reaches, and listen to how the sound of your reach changes depending on where you reach, while the second sound is always the same. Now, the basic idea is that you want to find the reach which makes a sound that matches the second sound.” 
+  
+  \item{} \textbf{Demo Instructions (Comprehension Test):} “Now, what I’d like you to do is to make three reaches for me [demonstrate for them], one to the far left, one straight ahead, and one to the far right. Let me know which gives you the best match between the sounds.” [If they do not answer correctly, have them listen again.]
+  
+  \item{} \textbf{Demo Instructions (Final, how the sound works):} “Let me explain a bit more about how the sound is generated. The unit has picked a target somewhere in front of you. The closer you get to the target, the higher the pitch. The unit has not only pitched a target, but also a path to the target. For example, if this was my target [demonstrate], I could take this path [demonstrate], or take this path [demonstrate], or some other path [demonstrate]. The path controls the volume. If you’re on the right path, the volume stays at max. If you go off the path, the volume drops. The second sound is always at max volume, with sharply rising pitch, because it’s the sound you would make, were you to make the perfect reach to the target along just the right path. That’s why you reach the target and stay on path by matching the sound you make with your reach to the second sound.” 
+  
+  \item{} [Unplug unit, have participant relax.]
+  
+  \item{} \textbf{Experiment Instructions:} “The experiment will go just like the demo, with two changes. First, you’ll be blindfolded. Second, you’ll do more reaches. There will be two blocks. In the first block, you’ll do 25 reaches to random spots without any feedback. There is no target. In the second block, you’ll do 75 reaches with feedback, trying to find the target. Now in the first block, you don’t have to do anything crazy [demonstrate a reach to the extreme right], but you do want to fill the space in front of you with reaches. [Demonstrate:] Put some reaches high, some low, some left, some right, some near, some far. Make sure you cover a large space and fill it as evenly and well as you can with reaches. After you finish the first 25 reaches, the unit will select a target and path somewhere in that space you were reaching. You will have 75 reaches to find it. When you think you’ve found it, stop searching and ‘lock into’ that spot. Keep reaching towards it as best you can. We’re interested in both what happens as you search, and what happens once you find it. Keep in mind that there’s an element of luck: the target might be somewhere easy to find and you hit it quickly in a few reaches, or it might be off in some corner or otherwise hard to find and it might take twenty or thirty reaches to find it. However your search goes, don’t overthink it and trust your judgement. You will be able to find the target. Now, no one find it exactly, so, even if you can’t get a perfect match, once the match is as good as you can get it, “hone in on” that spot and keep reaching towards it. Finally, think about search strategy. As you did in the demo, reach in different directions, left, right, center, and see where you get the best match. Then refine that match [demonstrate] by searching more in that area. Remember that the target is in 3D space. So, it’s not just a matter of searching left and right, but also searching up and down, and near and far [keep demonstrating]. Think about what can happen as you search. For example, if you search from left to right and none of it is a good match, perhaps you are reaching high and the target is low. Another example: If the target is nearby and you keep reaching far away, you also won’t get a good match. So, make sure you’re searching all dimensions. Think also about what the pitch tells you. For example, if you are reaching past the target, you’ll hear the pitch rise, and then fall. Any questions?’’
+  
+  \item{} [Make sure to synchronize sonification system and cameras at startup; warn participant about the startup noise.]
+  
+  \item{} \textbf{Experiment (Beginning):} “When you’re comfortable and relaxed in the initial position, let me know. [Participant indicates they are ready.] Okay, now, when you hear the sound turn on, you can make your first reach.”
+  
+  \item{} [Watch for model number, so you can confirm a good recording on that reach, observe the participant, and check that the sonification is responding as expected.]
+  
+  \item{} \textbf{Experiment (As first reach saves):} “Very good. The data is saving now. Remember it takes up to fifteen seconds to save the data. Please stay still in the initial position during that time. Once the data finishes saving, the sound should turn back on and you can make another reach.” 
+  
+  \item{} \textbf{Experiment (Coaching to get back into the initial position):} [If participant doesn’t hear sound after data is saved:] “The data has saved. If you don’t hear the sound now, it just means you haven’t returned to quite the same initial position. Just make a very small adjustment of your arm or shoulder until you get the sound back. Remember not to move your left (/right) hand.” [Alternatively, if struggling:] “Just go ahead and make a reach. Be sure to relax on the return. Sometimes you naturally come back to the right initial position.” 
+  
+  \item{} \textbf{Experiment (Reach 5, or 10):} “You’re doing great. Good speed, good pauses, nice and smooth. Be sure to fill the space around you as best you can with reaches, some high, some low, some left, some right, some near, and some far.” 
+  
+  \item{} \textbf{Experiment (Reach Count):} [Every ten or fifteen reaches, as is natural:] “Doing great. You have done X number of reaches, with Y more to go.” [As approaching the beginning of feedback:] “You have X more random reaches until you start receiving the feedback.” 
+  
+  \item{} \textbf{Experiment (After Reach 25):} “That was reach number 25. You’ll now start to receive the feedback. Remember that you want to find the reach which [terminal:] matches the two sounds [online:] matches the second sound. Remember the target can be anywhere you were just reaching. You want to search high, low, left, right, near, far. Once you get the best match you can and feel you’ve found the target, just keep reaching to that spot.” 
+  
+  \item{} \textbf{Experiment (After Reach 75):} “That was reach 75. For these last 25, you might notice a change in how the feedback is delivered. However, the target has not moved. So, if you think you’ve found it, just keep reaching to that spot. Also, the idea behind the feedback has not changed. You still want to have the best match you can get between the two sounds.” 
+  
+  \item{} \textbf{Experiment (After Reach 100):} “That was your last reach. All done! Please hold still while the data finishes saving.” [Once the sonification unit data completes streaming in, stop camera recording, close the serial monitor window, and unplug unit.] “You can relax. Take the headphones and blindfold off.” [Remove sensors from participant.] “You can take the straps and marker off yourself. How was that? Do you think you found the target? Did you notice what changed about the sound in the last twenty-five reaches?”
+  
+\end{enumerate}
+  
+\end{multicols}
+
+# Data Preprocessing
+
+```{r counter_preprocessing}
+sec_num <- sec_num + 1
+subsec_num <- 0
+fig_num <- 0
+```
+
+```{r preprocessing, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+
+remove_bad_OT_rows <- TRUE # Remove bad rows (floating points) found in OT data on previous runs of code? 
+                            # These numbers are hand-specified (see end of this code chunk), so operation will work on the first try, however
+                            # that also means this code chunk can't be run twice without first re-running the setup code.
+if ( removed_bad_rows ) {
+  cat("Warning: You are trying to run processing a second time without re-running the setup.\n Running setup again.")
+  source("rs4_script_setup.R")
+}
+
+source("rs4_script_preprocessing.R")
+
+row.names(part_chop_summary) <- NULL
+colnames(part_chop_summary)[1] <- "Num"
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+
+cat("\nNumber of reaches remaining after shorts and floats are removed: ", sum(part_chop_summary$R.f.), "\n")
+
+# The following functions can be used plot the spatial data in 3D.
+run_visual_check <- FALSE
+if (run_visual_check) {
+  
+  if(!require(rgl)) {
+    install.packages("rgl")
+    library(rgl)
+  }
+  
+  # Inspect all participant data
+  for ( i in 1:70 ) {
+    cat("Inspecting participant ", i, "; Model num:", pTable$model[which(pTable$number==i)], "\n")
+    plotOTchopped(i)
+    Sys.sleep(2)
+  }
+  
+}
+# plotOTchopped(1) # check integrity of participant OT data
+# plotSU(1) # check integrity of participant SU data
+# plotOTchoppedReach(18,53,with_model = TRUE,with_error_jerk = TRUE) # can check individual reach in OT data (participant, reach)
+# plotSUReach(39,1) # can check individual reach in SU data ("x/y/z" components only)
+
+# From a visual check of all participants using the above plotting functions, on previous runs of the code there were floating/swapped points in participants 56, 58, 60, and 64. These are now removed in the preprocessing stage if remove_bad_OT_rows = TRUE.
+
+```
+
+\begin{multicols}{2}
+The data was preprocessed by: 
+
+\begin{enumerate}
+  \item{} Removing NA rows from the raw sonification unit (SU) data. (Number of NA rows found: `r num_of_NA_rows_motionSU`, or `r percentage_of_NA_rows_motionSU`\% of all SU data rows.)
+  \item{} Removing corrupted rows from the raw SU data. (Number of corrupted rows found: `r num_of_corrupted_rows_motionSU`, or `r percentage_of_corrupted_rows_motionSU`\% of all SU data rows.)
+  \item{} Removing rows from the raw SU data affected by corrupted rows. (Number of rows removed: `r num_of_lost_rows_motionSU`, or `r percentage_of_lost_rows_motionSU`\% of all SU data rows.)
+  \item{} Synchronizing the OptiTrack (OT) and SU recordings.
+  \item{} Partitioning (``chopping'') the OT data into discrete reaches.
+  \item{} Checking for short reaches, overrun reaches, and floating reaches. Short reaches are those $<$`r reach_min_length`ms, overruns are those $>$`r overrun_length`ms, and floats are those with initial position $>$`r float__distance`cm from the expected point. 
+  \item{} Removing bad rows (floating points) found in the OT data on previous runs of the code. (Number of bad rows found: `r num_OT_bad_rows_removed`, or `r percentage_OT_bad_rows_removed`\% of all OT data rows containing reaches.)
+\end{enumerate}
+  
+Results and key variables from synchronizing OT and SU recordings, partitioning OT data, and checking for shorts, overruns, and floats are provided in Table \ref{tab:chopresults}.
+
+Column name key for Table \ref{tab:chopresults}: 
+\begin{enumerate}
+    \item{} Num = Participant number.
+    \item{} RR = Number of raw reaches found for participant.
+    \item{} BSUS = Number of bad SU Samples found in participant's data.
+    \item{} ORs = Number of overrun reaches found in the participant's data. 
+    \item{} slide = Number of samples (1 sample = 10ms) the OT data series was slid to estimate a synchronized alignment with the corresponding SU data series (OTsampleslide).
+    \item{} Ss = Number of short reaches found in the participant's data.
+    \item{} S.R = Number of samples (1 sample = 10ms) the OT data series was slid to further refine the alignment with the corresponding SU data series for the random, no-feedback reaches (trial numbers 1-25), based on check of start time.
+    \item{} S.F = Number of samples (1 sample = 10ms) the OT data series was slid to further refine the alignment with the corresponding SU data series for the main-block feedback reaches (trial numbers 26-75), based on check of start time.
+    \item{} S.PB = Number of samples (1 sample = 10ms) the OT data series was slid to further refine the alignment with the corresponding SU data series for the switched-feedback reaches (trial numbers 76-100), based on check of start time.
+    \item{} ES.R = Number of samples (1 sample = 10ms) the OT data series was slid to further refine the alignment with the corresponding SU data series for the random, no-feedback reaches (trial numbers 1-25), based on check of end time.
+    \item{} ES.F = Number of samples (1 sample = 10ms) the OT data series was slid to further refine the alignment with the corresponding SU data series for the main-block feedback reaches (trial numbers 26-75), based on check of end time.
+    \item{} ES.PB = Number of samples (1 sample = 10ms) the OT data series was slid to further refine the alignment with the corresponding SU data series for the switched-feedback reaches (trial numbers 76-100), based on check of end time.
+    \item{} Fs = Number of floating reaches found in the OT data for the participant. 
+    \item{} R.f. = Final number of reaches after floats and shorts were removed. 
+    \item{} R.f. = Final number of random, no-feedback reaches (trials 1-25) after floats and shorts were removed. 
+    \item{} R.fb. = Final number of main-block feedback reaches (trials 26-75) after floats and shorts were removed.
+    \item{} R.L25. = Final number of switch-block feedback reaches (trials 76-100) after floats and shorts were removed. 
+    \item{} MRLr.ms. = Mean Reach Length (ms), random, no-feedback trials (numbers 1-25).
+    \item{} MRLfb.ms. = Mean Reach Length (ms), main-block feedback trials (numbers 26-75).
+    \item{} MRLpb.ms. = Mean Reach Length (ms), switch-block feedback trials (numbers 76-100).
+\end{enumerate}
+
+\end{multicols}
+  
+```{r table_sync}
+# kable_styling(latex_options = c("repeat_header"), font_size = 7) %>%
+part_chop_summary$MRLpb.ms. <- round(part_chop_summary$MRLpb.ms.,1)
+part_chop_summary$MRLr.ms. <- round(part_chop_summary$MRLr.ms.,1)
+part_chop_summary$MRLfb.ms. <- round(part_chop_summary$MRLfb.ms.,1)
+kable(part_chop_summary,
+      format = "latex",
+      longtable = TRUE,
+      booktabs = TRUE,
+      escape = FALSE,
+      caption = "Results of synchronizing OT and SU recordings, partitioning OT data, and checking for shorts, overruns, and floats.\\label{tab:chopresults}")  %>%
+  kable_styling(latex_options = c("repeat_header")) %>%
+  row_spec(0, angle = -90)
+```
+
+# Reach Errors {.tabset}
+
+```{r counter_errors}
+sec_num <- sec_num + 1
+subsec_num <- 0
+fig_num <- 0
+```
+
+```{r compute_error, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+remove_model <- TRUE # remove model from no-feedback reaches when 
+                      # computing their mean error?
+source("rs4_script_compute_error.R")
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+
+```
+
+\begin{multicols}{2}
+We computed and normalized error for each reach (for all four types of error: spatial target error, spatial path error, rotation target error, rotation path error). The algorithm computing error for each reach of each participant also ran diagnostics, giving information on things like how many path points it couldn't find in both the sonification unit (SU, rotation) and OptiTrac (OT, spatial) data. Reaches remaining after removing floats and shorts were also counted at this stage (number remaining = `r reach_after_SF_removed`). 
+
+To normalize error, for each participant, we first found $E_m$, the mean of the reach error values for all reaches from that participant in trials 1-25, the no-feedback block (excluding the model itself). Then, for each reach $r$ with error $E(r)$, we computed the normalized error as: \begin{equation}E_n(r) = \frac{E(r) - E_m}{E_m}\label{formula:normErrorS}\end{equation}
+For the sonification unit (rotation) data, $E(r)$ for target error was computed separately for each of the two sensors and then summed. For path error, for each point in the recording, $E(r)$ was computed separately for each of the two sensors and then summed. The mean of these sums was then taken as the path error. 
+
+For five participants (3, 8, 52, 60, and 67) 1 or more percent of spatial points are missed. However, we left these participants in the data, as (1) they still had all of their rotation data, and (2) visual checking of their spatial data didn't suggest anything abnormal. 
+
+The diagnostic results of the error processing are given in Table \ref{tab:errorresults}. Column name key for Table \ref{tab:errorresults}: 
+\begin{enumerate}
+    \item{} Num = Participant number.
+    \item{} mpp.OT = missing point percentage, OT data. 
+    \item{} mpp.SU = missing point percentage, SU data. 
+    \item{} mrp. OT = missing reach end-point percentage, i.e., the percentage of reaches in the OT data for which the end-point was not found when computing spatial target error. 
+    \item{} rep.OT = reach end percentage, OT data, i.e., the mean percentage of the reach recording length at which the end point was found. The ideal would be 100\%, while, e.g., 95\% would mean that, on average, the end point of the participant's reaches were found 95\% of the way through the reach recording. 
+    \item{} rep.SUa = Same as rep.OT, except for the first sensor in the SU data recording. 
+    \item{} rep.SUb = Same as rep.OT, except for the second sensor in the SU data recording.
+\end{enumerate}
+
+\end{multicols}
+
+```{r table_error_reshape}
+# Reshape table for better printing
+part_error_summary[-1] <- round(part_error_summary[-1], 2)
+row.names(part_error_summary) <- NULL
+part_error_summary_1 <- part_error_summary[1:35, ]
+part_error_summary_2 <- part_error_summary[36:70, ]
+blank_space <- rep(" ", 35)
+part_error_summary_2 <- cbind(blank_space, part_error_summary_2)
+names(part_error_summary_2)[1] <- " "
+row.names(part_error_summary_1) <- NULL
+row.names(part_error_summary_2) <- NULL
+part_error_summary_reshaped <- cbind(part_error_summary_1, part_error_summary_2)
+```
+
+```{r table_error}
+# kable_styling(latex_options = c("repeat_header"), font_size = 7)  %>%
+kable(part_error_summary_reshaped,
+              format = "latex",
+              longtable = TRUE,
+              booktabs = TRUE,
+              escape = FALSE,
+              caption = "Diagnostic results of computing error.\\label{tab:errorresults}") %>%
+  kable_styling(latex_options = c("repeat_header"))  %>%
+  row_spec(0, angle = -90) %>%
+  column_spec(8, width = "1cm" ) %>%
+  column_spec(1, bold = TRUE, border_left = TRUE ) %>%
+  column_spec(9, bold = TRUE, border_left = TRUE )
+```
+
+# Learning Variables
+
+```{r counter_learning}
+sec_num <- sec_num + 1
+subsec_num <- 0
+fig_num <- 0
+```
+
+```{r learning_variables, include=print_all_R_output, fig.show="hold", out.width="50%", linewidth=90}
+start_time_block <- Sys.time()
+print_learning_plots <- TRUE
+print_learning_results <- TRUE
+sat_factor <- 0.95 # How much of the asymptote must be reached by the EDF model to call participant saturated? 
+print_participants <- c(7,11,42,67) # Sample of participants to print
+source("rs4_script_learning_analysis.R")
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+\begin{multicols}{2}
+We fit an \emph{exponential decay function} (EDF) to each participant's normalized error improvement between reaches 26-75, for each of the four types of error (spatial target STE, spatial path SPE, rotational target RTE, and rotational path RPE). Normalized \emph{error improvement} was defined for each reach $r$ in Main-Block similar to normalized error (Formula \ref{formula:normErrorS}), except with the formula: \begin{equation}E_n(r) = \frac{E_m - E(r)}{E_m}\end{equation}
+
+The EDF was defined to model an exponential decay learning process $P$ with asymptote $A$ and learning rate $L$, where the value $P_{\text{next}}$ of $P$ on the next step is: 
+\begin{equation} P_{\text{next}} = P_{\text{prev}} + L * ( A - P_{\text{prev}} )\end{equation}
+To fit this EDF for each participant, values of $A$ and $L$ were searched for ones providing the best fit via a grid followed by optimx, as measured by mean squared error (MSE).
+
+Fitting the EDF finds the learning rate ($L$), saturation trial ($S$), and saturation level (asymptote, $A$) for each participant. These were used to break the main block (reaches 26-75) into pre-saturation and post-saturation reaches (saturation level defined as reaching `r sat_factor*100`\% of the asymptote). Results of the analysis (including mean squared error, MSE, of the EDM fits) are provided in Table \ref{tab:learning}. Note that ``Inf'' in a saturation trial column means that the participant did not reach the saturation point by trial 75. 
+
+\end{multicols}
+
+```{r table_learning}
+
+part_LV_summary[-c(4,8,12,16)] <- round(part_LV_summary[-c(4,8,12,16)], 3)
+
+kable(part_LV_summary,
+      format = "latex",
+      longtable = TRUE,
+      booktabs = TRUE,
+      escape = FALSE,
+      caption = "Results of learning analysis (learning rate, asymptote, and saturation trial).\\label{tab:learning}")  %>%
+  kable_styling(latex_options = c("repeat_header")) %>%
+  row_spec(0, angle = -90) %>%
+  column_spec(1, border_right = TRUE ) %>%
+  column_spec(5, border_right = TRUE ) %>%
+  column_spec(9, border_right = TRUE ) %>%
+  column_spec(13, border_right = TRUE )
+
+```
+
+\begin{multicols}{2}
+We also visually checked the EDF fits for all participants by plotting the data. Figure \ref{fig:sampleLC} provides four sample plots. Note that the dotted green line in the plots is $A$, the asymptote (saturation level), while the dotted red line is $S$, the saturation trial.
+
+\end{multicols}
+
+```{r fig_sample_LV_plots, fig.cap="Sample plots of STE learning curves for four participants.\\label{fig:sampleLC}"}
+suppressWarnings(
+wrap_plots(sample_learning_plots, ncol = 2)
+)
+```
+
+# Jerk Processing {.tabset}
+
+```{r counter_jerk}
+sec_num <- sec_num + 1
+subsec_num <- 0
+fig_num <- 0
+```
+
+\begin{multicols}{2}
+We computed normalized directional jerk for the reaches recorded in the study. For each participant, to normalize jerk we first found $J_m$, the mean of the reach jerk values for all reaches from that participant in trials 1-25, the no-feedback block. Then, for each reach $r$ with jerk $J(r)$, we defined normalized jerk as: 
+\begin{equation}
+J_n(r) = \frac{J(r) - J_m}{J_m}
+\end{equation} 
+Note that, similar to the error processing, for the sonification unit (rotation) data, $J(r)$ for each point of each reach was computed separately for each of the two sensors and then summed.
+
+Before taking the jerk of each dimension, we both (1) filtered the position data and (2) cut off the first and last 200ms of recording from each reach. The position recordings from which the jerk is taken must be filtered first, as there is a lot of noise in both measurement systems (the optical system, and the sonification system), and this noise gets blown up after taking three derivatives, washing out all the signal. So, we first used a low-pass Butterworth filter on position along each axis (R package signal, v1.8-0). We used a low-pass filter and not band-pass because we assumed that all noise is higher frequency than actual changes in jerk. The first and last 200ms of recording was cut from each reach in case the alignment between data streams was not perfect, and also because the beginning and end of each reach are inherently jerky; we only wanted to look for jerk within the middle of the reach, i.e., evidence of mid-reach twitches.
+
+How did we set the filter settings (cutoff)? The first factor considered was the need to minimize the difference in jerk measurements between the two systems (optical and the sonification system). Specifically, we wanted to minimize the mean absolute value of the difference in normalized jerk measurements between the two systems. This approach should work because the two systems will have \emph{different noise sources}, so, disagreement between them on normalized jerk implies we're looking at noise. Of course, even if all noise was eliminated, we would still expect some disagreement, as the two systems are measuring slightly different variables (rotational jerk vs linear spatial jerk). However, that disagreement should be relatively small. 
+
+The second factor considered was the need to avoid trivial agreement between the two systems. With an extremely low frequency cut off, the two systems should agree (trivially), so we needed to avoid and check for this. The check can be visual, but also, if there is a statistical difference between the two conditions (e.g., online vs terminal) on which the two systems agree, then we can assume the cut-off was not set trivially low. (If it were, there would be no statistical difference between the conditions.) 
+
+The final factor considered for filter settings was the removal of outlier reaches and reaches with extreme disagreement between the systems. Outliers was defined (relative to a participant) as reaches with a value in one of the six dependent variables of interest (normalized spatial jerk, normalized rotational jerk, or one of the four types of normalized error) $> 3.0$ times the IQR above the third quartile or below the first quartile. Extreme disagreement between the systems for a reach was defined as a difference of $> 0.5$ (greater than 50 percentage-points) between the spatial and rotational measurements for that reach, in any of the six dependent variables. For example, if one system gives a normalized jerk value of (for example) $0.8$ for a reach (a jerk value of 80\% of the baseline value), and the other system gives a value of $1.4$ for that same reach (a value of 140\% of the baseline value), then there is a difference of $0.6$ between the two systems, which is greater than 50 percentage-points.
+
+Outliers and extreme disagreement are intertwined with the filter settings, insofar as different filter settings lead to different outliers and reaches with extreme disagreement, and removal of outliers and reaches with extreme disagreement changes the mean disagreement between systems (after outlier removal). We balanced these two factors by hand-searching each integer filter cutoff between 5 and 15 Hz. We settled on an order 9, 10Hz cutoff filter as the one which best balanced minimizing system disagreement and minimizing reach loss to outliers and extreme disagreement. This choice was also informed by the fact that several previous studies on motor learning in reaches used either a 5Hz or 10Hz cutoff (see (1) Boyer, E. O.; Babayan, B.; Bevilacqua, F.; Noisternig, M.; Warusfel, O.; Roby-Brami, A.; Hanneton, S. and Viaud-Delmon, I. From ear to hand: The role of the auditory-motor loop in pointing to an auditory source, \emph{Frontiers in Computational Neuroscience}, 2013, 7, 1--9, DOI: 10.3389/fncom.2013.00026, (2) Danna, J.; Fontaine, M.; Paz-Villagrán, V.; Gondre, C.; Thoret, E.; Aramaki, M.; Kronland-Martinet, R.; Ystad, S. and Velay, J.-L. The effect of real-time auditory feedback on learning new characters, \emph{Human Movement Science}, 2015, 43, 216--228, DOI: 10.1016/j.humov.2014.12.002, and (3) Boyer, E. O.; Bevilacqua, F.; Guigon, E.; Hanneton, S. and Roby-Brami, A. Modulation of ellipses drawing by sonification, \emph{Experimental Brain Research}, 2020, 238, 1011--1024, DOI: 10.1007/s00221-020-05770-6.)
+
+Here we give examples of the unfiltered kinematics vs the kinematics with the selected filter cutoff (Figures \ref{fig:jerkaxisS1a}, \ref{fig:jerkaxisS1b}, \ref{fig:jerkaxisS2a}, \ref{fig:jerkaxisS2b}, \ref{fig:jerkaxisS3a}, \ref{fig:jerkaxisS3b}, \ref{fig:jerkaxisS4a}, \ref{fig:jerkaxisS4b}). We plot the kinematics of one dimension (x for OptiTrack, qax for the sonification unit) for four random reaches, as recorded by both OptiTrack and the sonification unit. Plot colors are as follows: blue is position, gray is velocity, black is acceleration, and red is jerk. Note that while the filter may be distorting on a few of the examples, overall it leaves the shape of the position curve in tact. Further, keep in mind that the first and last 200ms of the reach has been cut off; the plots are just of the middle. Thus, the curve shapes may not look as expected. As expected, jerk magnitude is much lower with the filter. 
+
+\end{multicols}
+
+```{r jerk_processing, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+# How much of each reach recording should we cut off the beginning and end? 
+cutoffSU <- 200 # SU samples, equivalent to ms
+# Set filter by hand: 
+filter_order_OT <- 9 
+filter_order_SU <- 9
+filter_cutoff_OT <- 10 # in Hz
+filter_cutoff_SU <- 10
+# Process jerk
+source("rs4_script_jerk.R")
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+```{r visual_filter_check, include=print_all_R_output, linewidth=90}
+
+plot_scale <- 0.5
+plot_kinematics_OT <- function(p,r,cutoff_=filter_cutoff_OT) {
+  par(mfrow = c(1, 2))
+  plotNF <- mean_reach_jerk_OT(p,r,PLOT=TRUE,FILTER=FALSE,
+                               forder=filter_order_OT,
+                               fcutoff=Nyquist_normalized_from_Hz(cutoff_,OT_sample_rate),
+                               return_output=FALSE)
+  plotF <- mean_reach_jerk_OT(p,r,PLOT=TRUE,FILTER=TRUE,
+                              forder=filter_order_OT,
+                              fcutoff=Nyquist_normalized_from_Hz(cutoff_,OT_sample_rate),
+                              return_output=FALSE)
+  return(list(plotNF,plotF))
+} 
+plot_kinematics_SU <- function(p,r,cutoff_=filter_cutoff_SU) {
+  par(mfrow = c(1, 2))
+  plotNF <- mean_reach_jerk_SU(p,r,PLOT=TRUE,FILTER=FALSE,
+                               forder=filter_order_SU,
+                               fcutoff=Nyquist_normalized_from_Hz(cutoff_,SU_sample_rate),
+                               return_output=FALSE)
+  plotF <- mean_reach_jerk_SU(p,r,PLOT=TRUE,FILTER=TRUE,
+                              forder=filter_order_SU,
+                              fcutoff=Nyquist_normalized_from_Hz(cutoff_,SU_sample_rate),
+                              return_output=FALSE)
+  return(list(plotNF,plotF))
+}
+plot_jerkMag_OT <- function(p,r,cutoff_=filter_cutoff_OT) {
+  par(mfrow = c(1, 2))
+  plotNF <- mean_reach_jerk_OT(p,r,PLOT=FALSE,FILTER=FALSE,
+                               forder=filter_order_OT,
+                               fcutoff=Nyquist_normalized_from_Hz(cutoff_,OT_sample_rate),
+                               return_output=FALSE,PLOTmag=TRUE)
+  plotF <- mean_reach_jerk_OT(p,r,PLOT=FALSE,FILTER=TRUE,
+                              forder=filter_order_OT,
+                              fcutoff=Nyquist_normalized_from_Hz(cutoff_,OT_sample_rate),
+                              return_output=FALSE,PLOTmag=TRUE)
+  return(list(plotNF,plotF))
+} 
+plot_jerkMag_SU <- function(p,r,cutoff_=filter_cutoff_SU) {
+  par(mfrow = c(1, 2))
+  plotNF <- mean_reach_jerk_SU(p,r,PLOT=FALSE,FILTER=FALSE,
+                               forder=filter_order_SU,
+                               fcutoff=Nyquist_normalized_from_Hz(cutoff_,SU_sample_rate),
+                               return_output=FALSE,PLOTmag=TRUE)
+  plotF <- mean_reach_jerk_SU(p,r,PLOT=FALSE,FILTER=TRUE,
+                              forder=filter_order_SU,
+                              fcutoff=Nyquist_normalized_from_Hz(cutoff_,SU_sample_rate),
+                              return_output=FALSE,PLOTmag=TRUE)
+  return(list(plotNF,plotF))
+}
+
+num_of_examples <- 4
+RS4_part_to_plot <- sample(pTable$number,num_of_examples,replace = FALSE)
+plot_r_list <- rep(NA, length(RS4_part_to_plot))
+for ( i in 1:length(RS4_part_to_plot) ) {
+  p <- RS4_part_to_plot[i]
+  plot_r_list[i] <- sample(rTable$ReachNum[!is.na(rTable$ReachNum) & rTable$Participants==p],1)
+}
+saved_example_plots_filtering <- array(list(), dim = c(2,num_of_examples))
+saved_example_plots_filtering_mag <- array(list(), dim = c(2,num_of_examples))
+for ( i in 1:length(RS4_part_to_plot) ) {
+  saved_example_plots_filtering[1,i] <- list(plot_kinematics_OT(RS4_part_to_plot[i],plot_r_list[i]))
+  saved_example_plots_filtering[2,i] <- list(plot_kinematics_SU(RS4_part_to_plot[i],plot_r_list[i]))
+  saved_example_plots_filtering_mag[1,i] <- list(plot_jerkMag_OT(RS4_part_to_plot[i],plot_r_list[i]))
+  saved_example_plots_filtering_mag[2,i] <- list(plot_jerkMag_SU(RS4_part_to_plot[i],plot_r_list[i]))
+}
+generate_plot_x <- function(plotlist_,title_1,title_2,p_,print_plot = 1) {
+  
+  first_i <- c( 1,1,2,2,1,1,2,2 )
+  second_i <- c( 1,2,1,2,3,4,3,4 )
+  
+  plots_to_wrap1 <- list()
+  for ( n in 1:8 ) {
+    UFvF <- first_i[n]
+    k_plot <- second_i[n]
+    plots_to_wrap1 <- c( plots_to_wrap1, list(plotlist_[1,p_][[1]][[UFvF]][[k_plot]][[1]]) )
+  }
+  combined_plot1 <- wrap_plots(plots_to_wrap1, ncol = 4)
+  combined_plot_with_title1 <- ggdraw() +
+    draw_plot(combined_plot1, scale = 1) +
+    draw_label(title_1, size = 15, hjust = 0.5, y = 1.125) +
+    draw_label("Unfiltered", size = 12, hjust = 0, y = 1.025, x = 0.2) +
+    draw_label("Filtered", size = 12, hjust = 1, y = 1.025, x = 0.8) +
+    theme(plot.margin = margin(t = 45))
+  
+  if (print_plot==1) print(combined_plot_with_title1)
+  
+  plots_to_wrap2 <- list()
+  for ( n in 1:8 ) {
+    UFvF <- first_i[n]
+    k_plot <- second_i[n]
+    plots_to_wrap2 <- c( plots_to_wrap2, list(plotlist_[2,p_][[1]][[UFvF]][[k_plot]][[1]]) )
+  }
+  combined_plot2 <- wrap_plots(plots_to_wrap2, ncol = 4, heights = c(4,4), widths = c(1,1,1,1))
+  combined_plot_with_title2 <- ggdraw() +
+    draw_plot(combined_plot2, scale = 1) +
+    draw_label(title_2, size = 15, hjust = 0.5, y = 1.125) +
+    draw_label("Unfiltered", size = 12, hjust = 0, y = 1.025, x = 0.2) +
+    draw_label("Filtered", size = 12, hjust = 1, y = 1.025, x = 0.8) +
+    theme(plot.margin = margin(t = 45))
+  
+  if (print_plot==2) print(combined_plot_with_title2)
+  
+  plots_to_wrap_final <- list() 
+  plots_to_wrap_final <- c( plots_to_wrap_final, list(combined_plot_with_title1) )
+  plots_to_wrap_final <- c( plots_to_wrap_final, list(combined_plot_with_title2) )
+  combined_plot_final <- wrap_plots(plots_to_wrap_final, ncol = 1)
+  
+  if (print_plot==3) print(combined_plot_final)
+  
+}
+generate_plot_mag <- function(plotlist_,title_1,title_2,p_,print_plot = 1) {
+  
+  plots_to_wrap1 <- list()
+  for ( n in 1:2 ) {
+    plots_to_wrap1 <- c( plots_to_wrap1, list(plotlist_[1,p_][[1]][[n]]) )
+  }
+  combined_plot1 <- wrap_plots(plots_to_wrap1, ncol = 2, widths = 2)
+  combined_plot_with_title1 <- ggdraw() +
+    draw_plot(combined_plot1, scale = 1) +
+    draw_label(title_1, size = 15, hjust = 0.5, y = 1.125) +
+    draw_label("Unfiltered", size = 12, hjust = 0, y = 1.025, x = 0.2) +
+    draw_label("Filtered", size = 12, hjust = 1, y = 1.025, x = 0.8) +
+    theme(plot.margin = margin(t = 45))
+  
+  if (print_plot==1) print(combined_plot_with_title1)
+  
+  plots_to_wrap2 <- list()
+  for ( n in 1:2 ) {
+    plots_to_wrap2 <- c( plots_to_wrap2, list(plotlist_[2,p_][[1]][[n]]) )
+  }
+  combined_plot2 <- wrap_plots(plots_to_wrap2, ncol = 2, widths = 2)
+  combined_plot_with_title2 <- ggdraw() +
+    draw_plot(combined_plot2, scale = 1) +
+    draw_label(title_2, size = 15, hjust = 0.5, y = 1.125) +
+    draw_label("Unfiltered", size = 12, hjust = 0, y = 1.025, x = 0.2) +
+    draw_label("Filtered", size = 12, hjust = 1, y = 1.025, x = 0.8) +
+    theme(plot.margin = margin(t = 45))
+  
+  if (print_plot==2) print(combined_plot_with_title2)
+  
+  plots_to_wrap_final <- list() 
+  plots_to_wrap_final <- c( plots_to_wrap_final, list(combined_plot_with_title1) )
+  plots_to_wrap_final <- c( plots_to_wrap_final, list(combined_plot_with_title2) )
+  combined_plot_final_ <- wrap_plots(plots_to_wrap_final, ncol = 2)
+  
+  if (print_plot==3) print(combined_plot_final_)
+  
+}
+
+sdx_title <- "Spatial dimension x"
+rdx_title <- "Rotational dimension qax"
+sm_title <- "Directional Spatial Jerk Magnitude"
+rd_title <- "Directional Rotational Jerk Magnitude"
+
+fig_perc_x <- "95%"
+fig_perc_mag <- "25%"
+
+```
+
+## Example Filtered Jerk-Axis Plots
+\newpage{}
+
+```{r sample_plotA, out.width=fig_perc_x, fig.cap="Filtered and unfiltered jerk-axis samples (OT), first sample reach.\\label{fig:jerkaxisS1a}"}
+suppressWarnings(
+generate_plot_x(plotlist_ = saved_example_plots_filtering, 
+              title_1 = sdx_title,
+              title_2 = rdx_title,
+              p_ = 1,
+              print_plot = 1))
+```
+
+```{r sample_plotB, out.width=fig_perc_x, fig.cap="Filtered and unfiltered jerk-axis samples (SU), first sample reach.\\label{fig:jerkaxisS1b}"}
+suppressWarnings(
+generate_plot_x(plotlist_ = saved_example_plots_filtering, 
+              title_1 = sdx_title,
+              title_2 = rdx_title,
+              p_ = 1,
+              print_plot = 2))
+```
+
+```{r sample_plotC, out.width=fig_perc_x, fig.cap="Filtered and unfiltered jerk-axis samples (OT), second sample reach.\\label{fig:jerkaxisS2a}"}
+suppressWarnings(
+generate_plot_x(plotlist_ = saved_example_plots_filtering, 
+              title_1 = sdx_title,
+              title_2 = rdx_title,
+              p_ = 2,
+              print_plot = 1))
+```
+
+```{r sample_plotD, out.width=fig_perc_x, fig.cap="Filtered and unfiltered jerk-axis samples (SU), second sample reach.\\label{fig:jerkaxisS2b}"}
+suppressWarnings(
+generate_plot_x(plotlist_ = saved_example_plots_filtering, 
+              title_1 = sdx_title,
+              title_2 = rdx_title,
+              p_ = 2,
+              print_plot = 2))
+```
+
+```{r sample_plotE, out.width=fig_perc_x, fig.cap="Filtered and unfiltered jerk-axis samples (OT), third sample reach.\\label{fig:jerkaxisS3a}"}
+suppressWarnings(
+generate_plot_x(plotlist_ = saved_example_plots_filtering, 
+              title_1 = sdx_title,
+              title_2 = rdx_title,
+              p_ = 3,
+              print_plot = 1))
+```
+
+```{r sample_plotF, out.width=fig_perc_x, fig.cap="Filtered and unfiltered jerk-axis samples (SU), third sample reach.\\label{fig:jerkaxisS3b}"}
+suppressWarnings(
+generate_plot_x(plotlist_ = saved_example_plots_filtering, 
+              title_1 = sdx_title,
+              title_2 = rdx_title,
+              p_ = 3,
+              print_plot = 2))
+```
+
+```{r sample_plotG, out.width=fig_perc_x, fig.cap="Filtered and unfiltered jerk-axis samples(OT), fourth sample reach.\\label{fig:jerkaxisS4a}"}
+suppressWarnings(
+generate_plot_x(plotlist_ = saved_example_plots_filtering, 
+              title_1 = sdx_title,
+              title_2 = rdx_title,
+              p_ = 4,
+              print_plot = 1))
+```
+
+```{r sample_plotH, out.width=fig_perc_x, fig.cap="Filtered and unfiltered jerk-axis samples(SU), fourth sample reach.\\label{fig:jerkaxisS4b}"}
+suppressWarnings(
+generate_plot_x(plotlist_ = saved_example_plots_filtering, 
+              title_1 = sdx_title,
+              title_2 = rdx_title,
+              p_ = 4,
+              print_plot = 2))
+```
+
+\newpage{}
+## Example Filtered Jerk-Magnitude Plots
+
+\begin{multicols}{2}
+Next, we plot (in dark red) the jerk magnitude for those same four random reaches, as recorded by both OptiTrack and the sonification unit  (Figures \ref{fig:jerkmagS1a}, \ref{fig:jerkmagS1b}, \ref{fig:jerkmagS2a}, \ref{fig:jerkmagS2b}, \ref{fig:jerkmagS3a}, \ref{fig:jerkmagS3b}, \ref{fig:jerkmagS4a}, \ref{fig:jerkmagS4b}). Note that while the filter may be distorting on a few of the examples, overall it leaves the shape of the position curve in tact. Further, keep in mind that the first and last 200ms of the reach has been cut off; the plots are just of the middle. Thus, the curve shapes may not look as expected. 
+\end{multicols}
+
+```{r sample_plotI, out.height=fig_perc_mag, fig.cap="Filtered and unfiltered jerk-magnitude samples (OT), first sample reach.\\label{fig:jerkmagS1a}"}
+suppressWarnings(
+generate_plot_mag(plotlist_ = saved_example_plots_filtering_mag, 
+              title_1 = sm_title,
+              title_2 = rd_title,
+              p_ = 1,
+              print_plot = 1))
+```
+
+```{r sample_plotJ, out.height=fig_perc_mag, fig.cap="Filtered and unfiltered jerk-magnitude samples (SU), first sample reach.\\label{fig:jerkmagS1b}"}
+suppressWarnings(
+generate_plot_mag(plotlist_ = saved_example_plots_filtering_mag, 
+              title_1 = sm_title,
+              title_2 = rd_title,
+              p_ = 1,
+              print_plot = 2))
+```
+
+```{r sample_plotK, out.height=fig_perc_mag, fig.cap="Filtered and unfiltered jerk-magnitude samples (OT), second sample reach.\\label{fig:jerkmagS2a}"}
+suppressWarnings(
+generate_plot_mag(plotlist_ = saved_example_plots_filtering_mag, 
+              title_1 = sm_title,
+              title_2 = rd_title,
+              p_ = 2,
+              print_plot = 1))
+```
+
+```{r sample_plotL, out.height=fig_perc_mag, fig.cap="Filtered and unfiltered jerk-magnitude samples (SU), second sample reach.\\label{fig:jerkmagS2b}"}
+suppressWarnings(
+generate_plot_mag(plotlist_ = saved_example_plots_filtering_mag, 
+              title_1 = sm_title,
+              title_2 = rd_title,
+              p_ = 2,
+              print_plot = 2))
+```
+
+```{r sample_plotM, out.height=fig_perc_mag, fig.cap="Filtered and unfiltered jerk-magnitude samples (OT), third sample reach.\\label{fig:jerkmagS3a}"}
+suppressWarnings(
+generate_plot_mag(plotlist_ = saved_example_plots_filtering_mag, 
+              title_1 = sm_title,
+              title_2 = rd_title,
+              p_ = 3,
+              print_plot = 1))
+```
+
+```{r sample_plotN, out.height=fig_perc_mag, fig.cap="Filtered and unfiltered jerk-magnitude samples (SU), third sample reach.\\label{fig:jerkmagS3b}"}
+suppressWarnings(
+generate_plot_mag(plotlist_ = saved_example_plots_filtering_mag, 
+              title_1 = sm_title,
+              title_2 = rd_title,
+              p_ = 3,
+              print_plot = 2))
+```
+
+```{r sample_plotO, out.height=fig_perc_mag, fig.cap="Filtered and unfiltered jerk-magnitude samples (OT), fourth sample reach.\\label{fig:jerkmagS4a}"}
+suppressWarnings(
+generate_plot_mag(plotlist_ = saved_example_plots_filtering_mag, 
+              title_1 = sm_title,
+              title_2 = rd_title,
+              p_ = 4,
+              print_plot = 1))
+```
+
+```{r sample_plotP, out.height=fig_perc_mag, fig.cap="Filtered and unfiltered jerk-magnitude samples (SU), fourth sample reach.\\label{fig:jerkmagS4b}"}
+suppressWarnings(
+generate_plot_mag(plotlist_ = saved_example_plots_filtering_mag, 
+              title_1 = sm_title,
+              title_2 = rd_title,
+              p_ = 4,
+              print_plot = 2))
+```
+
+\newpage{}
+# Outlier and Extreme Jerk Difference Removal
+
+```{r counter_outlier, echo = FALSE}
+sec_num <- sec_num + 1
+subsec_num <- 0
+fig_num <- 0
+```
+
+```{r outlier_removal, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+outlierIQR_cutoff <- 3.0
+dis_limit <- 0.5
+#rTable <- rTable_saved # Restore R table before running 
+                         # from a previous pre-outlier-removal save?
+#Exp_motionSU <- Exp_motionSU_saved # Restore Exp_motionSU before running 
+                                    # from a previous pre-outlier-removal save?
+source("rs4_script_outliers.R")
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+\begin{multicols}{2}
+We performed statistical analysis on the reach data with a linear mixed-effects model (LMM), for the six dependent variables (spatial jerk, rotational jerk, spatial target error, spatial path error, rotational target error, and rotational path error). First we removed outlier reaches. Specifically, for each of the six dependent variables, we grouped the reaches by participants, then identified outlier reaches (for that variable) for each participant. A reach was removed if it was an outlier (for that participant) for any of the six variables. We defined outliers as those $> 3.0$ times the IQR above the third quartile or below the first quartile (i.e., we only removed ``extreme'' outliers). After removing outliers, we removed reaches with extreme system disagreement in normalized jerk, normalized target error, or normalized path error, defined as reaches where the absolute value of the difference between normalized spatial and rotational measurements is $>0.5$ (greater than 50 percentage-points). As noted above, this means that if one system gives a normalized value of (for example) $0.8$ for a reach (a value of 80\% of the baseline value), and the other system gives a value of $1.4$ for that same reach (a value of 140\% of the baseline value), then there is a difference of $0.6$ between the two systems, which is greater than 50 percentage-points.
+
+There were `r num_of_outliers_found` outliers found, which is `r round(outliers_as_percent_of_total, digits = 3)`\% of the total number of collected reaches (`r num_of_reaches_total`), and `r round(outliers_as_percent_of_total_after_shorts_and_floats_removed, digits = 3)`\% of the number of reaches after shorts and floats were removed (`r num_of_reaches_after_shorts_and_floats_removed`). This left a mean of `r round(mean_remaining_reaches_per_participant, digits = 3)` reaches per participant. Figure \ref{fig:remainingppafterOR} plots the number of reaches per participant remaining and also plots the distribution in a histogram. 
+
+\end{multicols}
+
+```{r plot_remaining_reaches, out.width="67%", fig.cap="Remaining Reaches per Participant After Outlier Removal\\label{fig:remainingppafterOR}"}
+suppressWarnings(
+wrap_plots(remaining_reaches_pp_plot, remaining_reaches_pp_hist, ncol = 2)
+)
+```
+
+\begin{multicols}{2}
+There were `r num_of_ExD_found` extreme-disagreement reaches found, which is `r round(ExD_as_percent_of_total, digits = 3)`\% of the total number of collected reaches (`r num_of_reaches_total`), and `r round(ExD_as_percent_of_total_after_OSF_removed, digits = 3)`\% of the number of reaches after outliers, shorts, and floats were removed (`r num_of_reaches_after_OSF_removed`). This left `r final_remaining_reaches` reaches, or `r round(final_remaining_reaches_as_percent_of_total, digits = 3)`\% of the original `r num_of_reaches_total` collected reaches. 
+
+Removing outliers and reaches with high system disagreement in normalized jerk notably decreased the mean disagreement between OptiTrack and the sonification system on reach jerk. Mean normalized jerk measurement difference between the systems before outlier and extreme-disagreement removal was `r round(original_jerk_diff, digits = 3)` percentage points. After outlier removal, mean normalized jerk measurement difference between the systems was `r round(afterremoval_jerk_diff, digits = 3)` percentage points. The final disagreement between the systems on jerk, after the removal of both outliers and extreme-disagreement reaches, was `r round(final_jerk_diff, digits = 3)` percentage points. 
+
+Mean normalized target error measurement difference between the systems before outlier and extreme-disagreement removal was `r round(original_target_diff, digits = 3)` percentage points. After outlier removal, mean normalized target error measurement difference between the systems was `r round(afterremoval_target_diff, digits = 3)` percentage points. The final disagreement between the systems on target error, after the removal of both outliers and extreme-disagreement reaches, was `r round(final_target_diff, digits = 3)` percentage points.
+
+Mean normalized path error measurement difference between the systems before outlier and extreme-disagreement removal was `r round(original_path_diff, digits = 3)` percentage points. After outlier removal, mean normalized path error measurement difference between the systems was `r round(afterremoval_path_diff, digits = 3)` percentage points. The final disagreement between the systems on path error, after the removal of both outliers and extreme-disagreement reaches, was `r round(final_path_diff, digits = 3)` percentage points.
+
+Figure \ref{fig:finalsystemdisagreement} shows the distribution of the final system disagreement for jerk, target error, and path error. 
+
+\end{multicols}
+
+```{r plot_system_disagreement, out.width="90%", fig.cap="Final Distribution of System Disagreement.\\label{fig:finalsystemdisagreement}"}
+suppressWarnings(
+wrap_plots(system_disagreement_histJ, system_disagreement_histT, system_disagreement_histP, ncol = 3)
+)
+```
+
+# Linear Mixed-Effects Modelling and Statisical Analysis of Reaches
+
+```{r counter_LMM}
+sec_num <- sec_num + 1
+subsec_num <- 0
+fig_num <- 0
+```
+
+```{r LMM_and_stats, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+Bonferroni_Correction <- TRUE
+regression_coefficients <- 3 # Block, LearningFeedback, Participant
+dependent_variables_tested <- 3 # RJ, SJ, RTE, RPE, STE, SPE, but spatial and rotational measures highly correlated
+confidence_interval <- 0.95 
+confidence_interval_saved <- confidence_interval
+num_of_bs <- 10000 # number of resamples for bootstrapping
+RESCALE_DV <- FALSE # rescale dependent variable for model fitting?
+REML_VAL <- FALSE # optimize with REML or ML criterion? Default is TRUE.
+saved_bs_results <- data.frame(matrix(NA, nrow = 5, ncol = 8)) # Initiate global variable to temporally save bootstrapping results
+saved_implied_means <- data.frame(matrix(NA, nrow = 4, ncol = 5)) # Initiate global variable to temporally save implied means
+IV_FORMULA <- "~ Block * LearningFeedback + (Block | Participant)"
+IV_FORMULA_complex <- "~ Block * LearningFeedback + (Block * LearningFeedback | Participant)"
+  # complex formula not used; returns essentially the same results with much larger run times,
+  #   the model also often fails to converge because of complexity. 
+fit_tolerance <- 4e-3 # model fit tolerance, default is 2e-3
+source("rs4_script_LMM.R")
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+\begin{multicols}{2}
+For our statistical analysis, we had six dependent variables: normalized rotational jerk, normalized spatial jerk, normalized rotational target error, normalized rotational path error, normalized spatial target error, and normalized spatial path error. As independent variables, we had two categorical factors: (1) block, and (2) the learning feedback. The learning feedback was the feedback the participant received during the main block (reaches 26-75), i.e., the feedback they received as they learned the model reach. There were four blocks: (NF) Reaches 1-25, the no-feedback, random reaches, (PreSat) Reach 26 to the reach before the saturation trial, (Sat) The saturation trial to reach 75, and (Sw) Reaches 76-100, the reaches in which feedback is switched. For learning feedback, there were two levels: online feedback and terminal feedback. For block, we only used the last two blocks (Sat and Sw) as factor levels. This is because the first block, NF, is used as the baseline to normalize our dependent variables, and the second block, PreSat, has reaches made before learning saturation. We were only interested in potential effects of the feedback once the participant has learned the reach, hence we looked at only Sat and Sw reaches. 
+
+The saturation trial was different for each participant and determined by the EDF fitted to that participant. Note that we had four different saturation trials for each participant, one for each of the four types of error. For this analysis, we used the max of spatial target error saturation and rotational target error saturation. If one or both of these saturation trials was Inf (i.e., the participant didn't saturate within the main block), or if the max was $>66$, then 66 was used as the saturation trial to ensure there were more than just a few reaches (or any reaches at all!) for that participant in the Sat block. If the max of these saturation trials was less than 35 (i.e., the participant saturated almost immediately), then 35 was used as the saturation trial, to ensure some time had passed for adaptation (if any) to the feedback to occur. 
+
+After computing the saturation trial for each participant, there was a total of `r num_Sat_reaches_found` reaches in the Sat block (an average of `r round(avg_Sat_reaches_found_pp, digits = 3)` reaches per participant) and a total of `r num_Sw_reaches_found` reaches in the Sw block (an average of `r round(avg_Sw_reaches_found_pp, digits = 3)` reaches per participant). By learning feedback condition, there was an average of `r round(avg_num_of_Sat_online, digits = 3)` Sat-block reaches per participant in the online condition and an average of `r round(avg_num_of_Sat_terminal, digits = 3)` Sat-block reaches per participant in the terminal condition. There was an average of `r round(avg_num_of_Sw_online, digits = 3)` Sw-block reaches per participant in the online condition and an average of `r round(avg_num_of_Sw_terminal, digits = 3)` Sw-block reaches per participant in the terminal condition. Summary statistics (mean and standard deviation) for all six dependent variables are given for all combinations of learning feedback and block in Table \ref{tab:summary_stats}. Column names for this table are defined as follows: variable = dependent variable, n = number of reaches in data, mean = mean variable value, and sd = standard deviation.
+
+\end{multicols}
+
+```{r table_summary_stats_lmm}
+kable(summary_stats[,3:6],
+      format = "latex",
+      longtable = TRUE,
+      booktabs = TRUE,
+      escape = FALSE,
+      caption = "Summary statistics (mean and standard deviation) for all six dependent variables, for all combinations of learning feedback and block.\\label{tab:summary_stats}")  %>%
+  kable_styling(latex_options = c("repeat_header")) %>%
+  pack_rows("Sat, Terminal", 1, 6) %>%
+  pack_rows("Sw, Terminal", 7, 12) %>%
+  pack_rows("Sat, Online", 13, 18) %>%
+  pack_rows("Sw, Online", 19, 24)
+```
+
+\begin{multicols}{2}
+Preliminary examination of the data showed that it was not normal, and so we could not use parametric tests such as ANOVA. Further, values for the reaches themselves are not independent, but instead are grouped by participant. Thus, we chose to use linear mixed-effects models (LMMs) to test for fixed effects from our factors, learning feedback and block (R package lme4, v1.1-35.1), with block as a random-effect variable grouped by participant. We were specifically interested in three effects: 
+
+\begin{enumerate}
+  \item{} The effect of online learning feedback in Sat block (compared to terminal learning feedback in Sat block).
+  \item{} The effect of the Sw block for those participants who learned with online feedback (compared to those who learned with terminal feedback). 
+  \item{} The effect of the Sw block for those participants who learned with terminal feedback (compared to those who learned with online feedback). 
+\end{enumerate}
+  
+Thus, we set Terminal as our reference level for learning feedback, and Sat as our reference level for block. Online and Sw are then the treatment levels, respectively, for learning feedback and block. Anticipating an interaction between learning feedback and block, we used the following formula for our model: 
+\begin{equation}DV \sim BK * LFB + (BK|P)\end{equation} 
+where $DV$ = dependent variable, $BK$ = block, $LFB$ = learning feedback, and $P$ = participant. 
+
+Note that we optimized with ML instead of REML criterion, as we were primarily interested in fixed-effects. We also rescaled the dependent variables to have a mean of 0 and a standard deviation of 1, although all reported results (unless otherwise noted) have been unscaled. We also ran the modelling without the rescaling and found nearly identical results. 
+
+In line with our hypothesis that reaches made with online feedback are more accurate and more jerky, for jerk we predicted a positive effect for (1), a negative effect for (2), and a positive effect for (3). This is because: (1) In Sat block, those who learn with online feedback are receiving online feedback, while those who learn with terminal feedback are receiving terminal feedback; thus, in Sat block, reaches made by participants in the online learning feedback group should be more jerky. (2) For participants who learned with online feedback, reaches made in the Sat block are made with online feedback, while reaches made in the Sw block are made with terminal feedback. Thus, the switch for them is from online to terminal feedback, and so we predict the Sw block to be less jerky than the Sat block. (3) For participants who learned with terminal feedback, reaches made in the Sat block are made with terminal feedback, while reaches made in the Sw block are made with online feedback. Thus, the switch for them is from terminal to online feedback, and so we predict the Sw block to be more jerky than the Sat block. For accuracy (reach error), the reasoning is exactly parallel, except here the prediction is that online feedback leads to \emph{less error}, i.e., \emph{lower} or \emph{less} normalized error. Thus, for the four types of error, we predict a negative effect for (1), a positive effect for (2), and a negative effect for (3). 
+
+To test these predictions, we used nonparametric bootstrapping with a Bonferroni correction to our alpha level ($\alpha=$ `r round(1-confidence_interval_saved, digits = 5)`). Bootstrap resamples were stratified by Block x Learning Feedback, although stratification did not notably alter results. We had three regression coefficients (learning feedback, block, and participant) with six dependent variables. The spatial and rotational measurements are all highly correlated (Pearson correlation of `r round(corJ, digits = 3)` for normalized jerk, `r round(corT, digits = 3)` for normalized target error, and `r round(corP, digits = 3)` for normalized path error). Hence, we only counted three dependent variables in our Bonferroni correction. Thus, our corrected alpha level was `r round(1-confidence_interval_saved, digits = 5)`$/$`r round(regression_coefficients*dependent_variables_tested, digits = 5)` $=$ `r round((1-confidence_interval_saved)/(regression_coefficients*dependent_variables_tested), digits = 5)`.
+
+We didn't use a parametric method in conjunction with the Satterthwaite approximation because the residuals of our models were neither normal nor T-distributed (checked by Shapiro-Wilk and Anderson-Darling; results can be generated by running the R code which produced this document). A central issue was fat tails, presumably beacuse even after removing \emph{extreme} outlier reaches ($>3.0$ IQR), there are many outliers ($>1.5$ IQR). (See the diagnostic figures below.) We performed both semiparametric and nonparametric boostrapping, but given the non-normality and outliers, report only the nonparametric results (which we take to be more sound).
+
+Finally, note that our choice to use learning feedback as a factor instead of feedback was driven by the mixed, within and between subjects experimental design. Specifically, the Switch block is only meaningful \emph{within} a given participant, as Sat vs Sw block is a repeated measure. However, within a given participant, this repeated measure is made across feedback types, e.g., if a participant received online feedback during Sat block, they received terminal feedback during Sw block (and vice versa). No participant received both feedback types in Sat block and no participant received both feedback types in Sw block. Thus, a test of the block treatment (testing the effect of the switch) within a feedback type does not make sense, as, for a given feedback type, the participants in the reference block (Sat) are not the same as the participants in the treatment block (Sw). A test of the block treatment only makes sense within a \emph{learning} feedback type, as, for a given learning feedback type, we have a repeated measure for each participant, one in the reference block and one in the treatment block. 
+\end{multicols}
+
+\newpage{}
+## Normalized Rotational Jerk
+
+Here we report all results from our LMM analysis of normalized rotational Jerk. Specifically, we report the raw dependent variable values (unscaled) for each reach by block and learning feedback (Figure \ref{fig:replimreachplot1}). We also report:
+\begin{enumerate}
+    \item{} The summary information from the LMM fit to the full set of reaches, including model diagnostics (Akaike Information Criterion (AIC), Bayesian Information Criterion (BIC), log-likelihood, residual deviation with degrees of freedom), residual summary statistics (Min, Q1, Median, Q3, Max, Mean, and Std.Dev), fixed-effect estimates (with estimate, standard error, and t-value), random-effect estimates (with variance and standard deviation), and correlation of fixed-effects estimates (see Table \ref{tab:summary_LMM_full1}). All values in these charts are scaled. 
+    \item{} The unscaled fixed-effect estimates from the LMM fit to the full set of reaches (Table \ref{tab:FEest_unscaled1}). 
+    \item{} The actual and predicted unscaled values, based on the LMM fitted to the full data (Figure \ref{fig:predictedLMMfull1}). 
+    \item{} Residual diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RdiagnosticsLMMfull1}). 
+    \item{} The random variable diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RVdiagnosticsLMMfull1}). 
+    \item{} Nonparametric bootstrap results, including both unscaled fixed-effects estimates and implied means and CI (Figure \ref{fig:bsresults1}). 
+    \item{} The distribution of MSE among LMM fit to bootstrapped data (Figure \ref{fig:BSmseHist1}).
+\end{enumerate}
+
+```{r counter_print1}
+sec_num <- sec_num
+subsec_num <- subsec_num + 1
+fig_num <- 0
+```
+
+```{r LMM_and_stats_RJ, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+
+# Normalized Rotational Jerk
+LMM_analysis(dv = "NormalizedRotationalJerk", dvN = "Normalized Rotational Jerk")
+saved_bs_RJ <- saved_bs_results
+write.csv(saved_bs_RJ, "saved_bs_RJ.csv", row.names = FALSE)
+saved_bs_RJ_raw <- saved_bs_results_raw
+write.csv(saved_bs_RJ_raw, "saved_bs_RJ_raw.csv", row.names = FALSE)
+saved_im_RJ <- saved_implied_means
+write.csv(saved_im_RJ, "saved_im_RJ.csv", row.names = FALSE)
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+```{r, out.width="67%", fig.cap="Dependent variable values for each reach by block and learning feedback, Normalized Rotational Jerk.\\label{fig:replimreachplot1}"}
+prelim_plot_reaches
+```
+
+```{r}
+kable(list(AICtab_saved,residual_summary_saved,FE_saved,RanEff_saved,Cor_FE_saved),
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Summary information from LMM fit to full set of reaches, for variable Normalized Rotational Jerk.\\label{tab:summary_LMM_full1}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r}
+kable(FEestimates_saved,
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Unscaled fixed-effect estimates from LMM fit to full set of reaches, for variable Normalized Rotational Jerk.\\label{tab:FEest_unscaled1}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r, out.width="95%", fig.cap="Actual and predicted values for LMM fitted to full data, for variable Normalized Rotational Jerk.\\label{fig:predictedLMMfull1}"}
+suppressWarnings(
+wrap_plots(Predicted_values_plot_reaches_saved, Predicted_values_plot_pmeans_saved, widths = c(1.5,2), ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Residual diagnostic plots for the LMM fit to the full data, for variable Normalized Rotational Jerk.\\label{fig:RdiagnosticsLMMfull1}"}
+residuals_diagnostics_plot_saved
+```
+
+```{r, out.width="67%", fig.cap="Random variable diagnostic plots for the LMM fit to the full data, for variable Normalized Rotational Jerk.\\label{fig:RVdiagnosticsLMMfull1}"}
+random_variable_diagnostics_plot_saved
+```
+
+```{r, out.width="95%", fig.cap="Nonparametric bootstrap results, for variable Normalized Rotational Jerk.\\label{fig:bsresults1}"}
+suppressWarnings(
+wrap_plots(BS_CI_plot_saved, BS_IM_plot_saved, ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Distribution of MSE among LMM fit to bootstrapped data, for variable Normalized Rotational Jerk.\\label{fig:BSmseHist1}"}
+suppressWarnings(
+BS_MSE_diagnostics_plot_saved
+)
+```
+
+\newpage{}
+## Normalized Spatial Jerk
+
+Here we report all results from our LMM analysis of normalized spatial Jerk. Specifically, we report the raw dependent variable values (unscaled) for each reach by block and learning feedback (Figure \ref{fig:replimreachplot2}). We also report:
+\begin{enumerate}
+    \item{} The summary information from the LMM fit to the full set of reaches, including model diagnostics (Akaike Information Criterion (AIC), Bayesian Information Criterion (BIC), log-likelihood, residual deviation with degrees of freedom), residual summary statistics (Min, Q1, Median, Q3, Max, Mean, and Std.Dev), fixed-effect estimates (with estimate, standard error, and t-value), random-effect estimates (with variance and standard deviation), and correlation of fixed-effects estimates (see Table \ref{tab:summary_LMM_full2}). All values in these charts are scaled. 
+    \item{} The unscaled fixed-effect estimates from the LMM fit to the full set of reaches (Table \ref{tab:FEest_unscaled2}). 
+    \item{} The actual and predicted unscaled values, based on the LMM fitted to the full data (Figure \ref{fig:predictedLMMfull2}). 
+    \item{} Residual diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RdiagnosticsLMMfull2}). 
+    \item{} The random variable diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RVdiagnosticsLMMfull2}). 
+    \item{} Nonparametric bootstrap results, including both unscaled fixed-effects estimates and implied means and CI (Figure \ref{fig:bsresults2}). 
+    \item{} The distribution of MSE among LMM fit to bootstrapped data (Figure \ref{fig:BSmseHist2}).
+\end{enumerate}
+
+```{r counter_print2}
+sec_num <- sec_num
+subsec_num <- subsec_num + 1
+fig_num <- 0
+```
+
+```{r LMM_and_stats_SJ, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+
+# Normalized Spatial Jerk
+LMM_analysis(dv = "NormalizedSpatialJerk", dvN = "Normalized Spatial Jerk")
+saved_bs_SJ <- saved_bs_results
+write.csv(saved_bs_SJ, "saved_bs_SJ.csv", row.names = FALSE)
+saved_bs_SJ_raw <- saved_bs_results_raw
+write.csv(saved_bs_SJ_raw, "saved_bs_SJ_raw.csv", row.names = FALSE)
+saved_im_SJ <- saved_implied_means
+write.csv(saved_im_SJ, "saved_im_SJ.csv", row.names = FALSE)
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+```{r, out.width="67%", fig.cap="Dependent variable values for each reach by block and learning feedback, for variable Normalized Spatial Jerk.\\label{fig:replimreachplot2}"}
+prelim_plot_reaches
+```
+
+```{r}
+kable(list(AICtab_saved,residual_summary_saved,FE_saved,RanEff_saved,Cor_FE_saved),
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Summary information from LMM fit to full set of reaches, for variable Normalized Spatial Jerk.\\label{tab:summary_LMM_full2}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r}
+kable(FEestimates_saved,
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Unscaled fixed-effect estimates from LMM fit to full set of reaches, for variable Normalized Spatial Jerk.\\label{tab:FEest_unscaled2}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r, out.width="95%", fig.cap="Actual and predicted values for LMM fitted to full data, for variable Normalized Spatial Jerk.\\label{fig:predictedLMMfull2}"}
+suppressWarnings(
+wrap_plots(Predicted_values_plot_reaches_saved, Predicted_values_plot_pmeans_saved, widths = c(1.5,2), ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Residual diagnostic plots for the LMM fit to the full data, for variable Normalized Spatial Jerk.\\label{fig:RdiagnosticsLMMfull2}"}
+residuals_diagnostics_plot_saved
+```
+
+```{r, out.width="67%", fig.cap="Random variable diagnostic plots for the LMM fit to the full data, for variable Normalized Spatial Jerk.\\label{fig:RVdiagnosticsLMMfull2}"}
+random_variable_diagnostics_plot_saved
+```
+
+```{r, out.width="95%", fig.cap="Nonparametric bootstrap results, for variable Normalized Spatial Jerk.\\label{fig:bsresults2}"}
+suppressWarnings(
+wrap_plots(BS_CI_plot_saved, BS_IM_plot_saved, ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Distribution of MSE among LMM fit to bootstrapped data, for variable Normalized Spatial Jerk.\\label{fig:BSmseHist2}"}
+suppressWarnings(
+BS_MSE_diagnostics_plot_saved
+)
+```
+
+\newpage{}
+## Normalized Rotational Target Error
+
+Here we report all results from our LMM analysis of normalized rotational target error. Specifically, we report the raw dependent variable values (unscaled) for each reach by block and learning feedback (Figure \ref{fig:replimreachplot3}). We also report:
+\begin{enumerate}
+    \item{} The summary information from the LMM fit to the full set of reaches, including model diagnostics (Akaike Information Criterion (AIC), Bayesian Information Criterion (BIC), log-likelihood, residual deviation with degrees of freedom), residual summary statistics (Min, Q1, Median, Q3, Max, Mean, and Std.Dev), fixed-effect estimates (with estimate, standard error, and t-value), random-effect estimates (with variance and standard deviation), and correlation of fixed-effects estimates (see Table \ref{tab:summary_LMM_full3}). All values in these charts are scaled. 
+    \item{} The unscaled fixed-effect estimates from the LMM fit to the full set of reaches (Table \ref{tab:FEest_unscaled3}). 
+    \item{} The actual and predicted unscaled values, based on the LMM fitted to the full data (Figure \ref{fig:predictedLMMfull3}). 
+    \item{} Residual diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RdiagnosticsLMMfull3}). 
+    \item{} The random variable diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RVdiagnosticsLMMfull3}). 
+    \item{} Nonparametric bootstrap results, including both unscaled fixed-effects estimates and implied means and CI (Figure \ref{fig:bsresults3}). 
+    \item{} The distribution of MSE among LMM fit to bootstrapped data (Figure \ref{fig:BSmseHist3}).
+\end{enumerate}
+
+```{r counter_print3}
+sec_num <- sec_num
+subsec_num <- subsec_num + 1
+fig_num <- 0
+```
+
+```{r LMM_and_stats_RTE, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+
+# Normalized Rotational Target Error
+LMM_analysis(dv = "NormalizedRotationalTargetError", dvN = "Normalized Rotational Target Error")
+saved_bs_RT <- saved_bs_results
+write.csv(saved_bs_RT, "saved_bs_RT.csv", row.names = FALSE)
+saved_bs_RT_raw <- saved_bs_results_raw
+write.csv(saved_bs_RT_raw, "saved_bs_RT_raw.csv", row.names = FALSE)
+saved_im_RT <- saved_implied_means
+write.csv(saved_im_RT, "saved_im_RT.csv", row.names = FALSE)
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+```{r, out.width="67%", fig.cap="Dependent variable values for each reach by block and learning feedback, for variable Normalized Rotational Target Error.\\label{fig:replimreachplot3}"}
+prelim_plot_reaches
+```
+
+```{r}
+kable(list(AICtab_saved,residual_summary_saved,FE_saved,RanEff_saved,Cor_FE_saved),
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Summary information from LMM fit to full set of reaches, for variable Normalized Rotational Target Error.\\label{tab:summary_LMM_full3}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r}
+kable(FEestimates_saved,
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Unscaled fixed-effect estimates from LMM fit to full set of reaches, for variable Normalized Rotational Target Error.\\label{tab:FEest_unscaled3}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r, out.width="95%", fig.cap="Actual and predicted values for LMM fitted to full data, for variable Normalized Rotational Target Error.\\label{fig:predictedLMMfull3}"}
+suppressWarnings(
+wrap_plots(Predicted_values_plot_reaches_saved, Predicted_values_plot_pmeans_saved, widths = c(1.5,2), ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Residual diagnostic plots for the LMM fit to the full data, for variable Normalized Rotational Target Error.\\label{fig:RdiagnosticsLMMfull3}"}
+residuals_diagnostics_plot_saved
+```
+
+```{r, out.width="67%", fig.cap="Random variable diagnostic plots for the LMM fit to the full data, for variable Normalized Rotational Target Error.\\label{fig:RVdiagnosticsLMMfull3}"}
+random_variable_diagnostics_plot_saved
+```
+
+```{r, out.width="95%", fig.cap="Nonparametric bootstrap results, for variable Normalized Rotational Target Error.\\label{fig:bsresults3}"}
+suppressWarnings(
+wrap_plots(BS_CI_plot_saved, BS_IM_plot_saved, ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Distribution of MSE among LMM fit to bootstrapped data, for variable Normalized Rotational Target Error.\\label{fig:BSmseHist3}"}
+suppressWarnings(
+BS_MSE_diagnostics_plot_saved
+)
+```
+
+\newpage{}
+## Normalized Rotational Path Error
+
+Here we report all results from our LMM analysis of normalized rotational path error. Specifically, we report the raw dependent variable values (unscaled) for each reach by block and learning feedback (Figure \ref{fig:replimreachplot4}). We also report:
+\begin{enumerate}
+    \item{} The summary information from the LMM fit to the full set of reaches, including model diagnostics (Akaike Information Criterion (AIC), Bayesian Information Criterion (BIC), log-likelihood, residual deviation with degrees of freedom), residual summary statistics (Min, Q1, Median, Q3, Max, Mean, and Std.Dev), fixed-effect estimates (with estimate, standard error, and t-value), random-effect estimates (with variance and standard deviation), and correlation of fixed-effects estimates (see Table \ref{tab:summary_LMM_full4}). All values in these charts are scaled. 
+    \item{} The unscaled fixed-effect estimates from the LMM fit to the full set of reaches (Table \ref{tab:FEest_unscaled4}). 
+    \item{} The actual and predicted unscaled values, based on the LMM fitted to the full data (Figure \ref{fig:predictedLMMfull4}). 
+    \item{} Residual diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RdiagnosticsLMMfull4}). 
+    \item{} The random variable diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RVdiagnosticsLMMfull4}). 
+    \item{} Nonparametric bootstrap results, including both unscaled fixed-effects estimates and implied means and CI (Figure \ref{fig:bsresults4}). 
+    \item{} The distribution of MSE among LMM fit to bootstrapped data (Figure \ref{fig:BSmseHist4}).
+\end{enumerate}
+
+```{r counter_print4}
+sec_num <- sec_num
+subsec_num <- subsec_num + 1
+fig_num <- 0
+```
+
+```{r LMM_and_stats_RPE, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+
+# Normalized Rotational Path Error
+LMM_analysis(dv = "NormalizedRotationalPathError", dvN = "Normalized Rotational Path Error")
+saved_bs_RP <- saved_bs_results
+write.csv(saved_bs_RP, "saved_bs_RP.csv", row.names = FALSE)
+saved_bs_RP_raw <- saved_bs_results_raw
+write.csv(saved_bs_RP_raw, "saved_bs_RP_raw.csv", row.names = FALSE)
+saved_im_RP <- saved_implied_means
+write.csv(saved_im_RP, "saved_im_RP.csv", row.names = FALSE)
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+```{r, out.width="67%", fig.cap="Dependent variable values for each reach by block and learning feedback, for variable Normalized Rotational Path Error.\\label{fig:replimreachplot4}"}
+prelim_plot_reaches
+```
+
+```{r}
+kable(list(AICtab_saved,residual_summary_saved,FE_saved,RanEff_saved,Cor_FE_saved),
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Summary information from LMM fit to full set of reaches, for variable Normalized Rotational Path Error.\\label{tab:summary_LMM_full4}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r}
+kable(FEestimates_saved,
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Unscaled fixed-effect estimates from LMM fit to full set of reaches, for variable Normalized Rotational Path Error.\\label{tab:FEest_unscaled4}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r, out.width="95%", fig.cap="Actual and predicted values for LMM fitted to full data, for variable Normalized Rotational Path Error.\\label{fig:predictedLMMfull4}"}
+suppressWarnings(
+wrap_plots(Predicted_values_plot_reaches_saved, Predicted_values_plot_pmeans_saved, widths = c(1.5,2), ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Residual diagnostic plots for the LMM fit to the full data, for variable Normalized Rotational Path Error.\\label{fig:RdiagnosticsLMMfull4}"}
+residuals_diagnostics_plot_saved
+```
+
+```{r, out.width="67%", fig.cap="Random variable diagnostic plots for the LMM fit to the full data, for variable Normalized Rotational Path Error.\\label{fig:RVdiagnosticsLMMfull4}"}
+random_variable_diagnostics_plot_saved
+```
+
+```{r, out.width="95%", fig.cap="Nonparametric bootstrap results, for variable Normalized Rotational Path Error.\\label{fig:bsresults4}"}
+suppressWarnings(
+wrap_plots(BS_CI_plot_saved, BS_IM_plot_saved, ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Distribution of MSE among LMM fit to bootstrapped data, for variable Normalized Rotational Path Error.\\label{fig:BSmseHist4}"}
+suppressWarnings(
+BS_MSE_diagnostics_plot_saved
+)
+```
+
+\newpage{}
+## Normalized Spatial Target Error
+
+Here we report all results from our LMM analysis of normalized spatial target error. Specifically, we report the raw dependent variable values (unscaled) for each reach by block and learning feedback (Figure \ref{fig:replimreachplot5}). We also report:
+\begin{enumerate}
+    \item{} The summary information from the LMM fit to the full set of reaches, including model diagnostics (Akaike Information Criterion (AIC), Bayesian Information Criterion (BIC), log-likelihood, residual deviation with degrees of freedom), residual summary statistics (Min, Q1, Median, Q3, Max, Mean, and Std.Dev), fixed-effect estimates (with estimate, standard error, and t-value), random-effect estimates (with variance and standard deviation), and correlation of fixed-effects estimates (see Table \ref{tab:summary_LMM_full5}). All values in these charts are scaled. 
+    \item{} The unscaled fixed-effect estimates from the LMM fit to the full set of reaches (Table \ref{tab:FEest_unscaled5}). 
+    \item{} The actual and predicted unscaled values, based on the LMM fitted to the full data (Figure \ref{fig:predictedLMMfull5}). 
+    \item{} Residual diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RdiagnosticsLMMfull5}). 
+    \item{} The random variable diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RVdiagnosticsLMMfull5}). 
+    \item{} Nonparametric bootstrap results, including both unscaled fixed-effects estimates and implied means and CI (Figure \ref{fig:bsresults5}). 
+    \item{} The distribution of MSE among LMM fit to bootstrapped data (Figure \ref{fig:BSmseHist5}).
+\end{enumerate}
+
+```{r counter_print5}
+sec_num <- sec_num
+subsec_num <- subsec_num + 1
+fig_num <- 0
+```
+
+```{r LMM_and_stats_STE, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+
+# Normalized Spatial Target Error
+LMM_analysis(dv = "NormalizedSpatialTargetError", dvN = "Normalized Spatial Target Error")
+saved_bs_ST <- saved_bs_results
+write.csv(saved_bs_ST, "saved_bs_ST.csv", row.names = FALSE)
+saved_bs_ST_raw <- saved_bs_results_raw
+write.csv(saved_bs_ST_raw, "saved_bs_ST_raw.csv", row.names = FALSE)
+saved_im_ST <- saved_implied_means
+write.csv(saved_im_ST, "saved_im_ST.csv", row.names = FALSE)
+
+# Save for printing in final section: 
+STEprelim_plot_reaches <- prelim_plot_reaches + theme(legend.position = "none")
+STEPredicted_values_plot_reaches_saved <- Predicted_values_plot_reaches_saved
+STEPredicted_values_plot_pmeans_saved <- Predicted_values_plot_pmeans_saved
+STEresiduals_diagnostics_plot_saved <- residuals_diagnostics_plot_saved
+STErandom_variable_diagnostics_plot_saved <- random_variable_diagnostics_plot_saved
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+Sanity check: uncorrected p.Estimated: `r p_estimated_uncorrected`
+
+```{r, out.width="67%", fig.cap="Dependent variable values for each reach by block and learning feedback, for variable Normalized Spatial Target Error.\\label{fig:replimreachplot5}"}
+prelim_plot_reaches
+```
+
+```{r}
+kable(list(AICtab_saved,residual_summary_saved,FE_saved,RanEff_saved,Cor_FE_saved),
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Summary information from LMM fit to full set of reaches, for variable Normalized Spatial Target Error.\\label{tab:summary_LMM_full5}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r}
+kable(FEestimates_saved,
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Unscaled fixed-effect estimates from LMM fit to full set of reaches, for variable Normalized Spatial Target Error.\\label{tab:FEest_unscaled5}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r, out.width="95%", fig.cap="Actual and predicted values for LMM fitted to full data, for variable Normalized Spatial Target Error.\\label{fig:predictedLMMfull5}"}
+suppressWarnings(
+wrap_plots(Predicted_values_plot_reaches_saved, Predicted_values_plot_pmeans_saved, widths = c(1.5,2), ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Residual diagnostic plots for the LMM fit to the full data, for variable Normalized Spatial Target Error.\\label{fig:RdiagnosticsLMMfull5}"}
+residuals_diagnostics_plot_saved
+```
+
+```{r, out.width="67%", fig.cap="Random variable diagnostic plots for the LMM fit to the full data, for variable Normalized Spatial Target Error.\\label{fig:RVdiagnosticsLMMfull5}"}
+random_variable_diagnostics_plot_saved
+```
+
+```{r, out.width="95%", fig.cap="Nonparametric bootstrap results, for variable Normalized Spatial Target Error.\\label{fig:bsresults5}"}
+suppressWarnings(
+wrap_plots(BS_CI_plot_saved, BS_IM_plot_saved, ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Distribution of MSE among LMM fit to bootstrapped data, for variable Normalized Spatial Target Error.\\label{fig:BSmseHist5}"}
+suppressWarnings(
+BS_MSE_diagnostics_plot_saved
+)
+```
+
+\newpage{}
+## Normalized Spatial Path Error
+
+Here we report all results from our LMM analysis of normalized spatial path error. Specifically, we report the raw dependent variable values (unscaled) for each reach by block and learning feedback (Figure \ref{fig:replimreachplot6}). We also report:
+\begin{enumerate}
+    \item{} The summary information from the LMM fit to the full set of reaches, including model diagnostics (Akaike Information Criterion (AIC), Bayesian Information Criterion (BIC), log-likelihood, residual deviation with degrees of freedom), residual summary statistics (Min, Q1, Median, Q3, Max, Mean, and Std.Dev), fixed-effect estimates (with estimate, standard error, and t-value), random-effect estimates (with variance and standard deviation), and correlation of fixed-effects estimates (see Table \ref{tab:summary_LMM_full6}). All values in these charts are scaled. 
+    \item{} The unscaled fixed-effect estimates from the LMM fit to the full set of reaches (Table \ref{tab:FEest_unscaled6}). 
+    \item{} The actual and predicted unscaled values, based on the LMM fitted to the full data (Figure \ref{fig:predictedLMMfull6}). 
+    \item{} Residual diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RdiagnosticsLMMfull6}). 
+    \item{} The random variable diagnostic plots for the LMM fit to the full data (Figure \ref{fig:RVdiagnosticsLMMfull6}). 
+    \item{} Nonparametric bootstrap results, including both unscaled fixed-effects estimates and implied means and CI (Figure \ref{fig:bsresults6}). 
+    \item{} The distribution of MSE among LMM fit to bootstrapped data (Figure \ref{fig:BSmseHist6}).
+\end{enumerate}
+
+```{r counter_print6}
+sec_num <- sec_num
+subsec_num <- subsec_num + 1
+fig_num <- 0
+```
+
+```{r LMM_and_stats_SPE, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+
+# Normalized Spatial Path Error
+LMM_analysis(dv = "NormalizedSpatialPathError", dvN = "Normalized Spatial Path Error")
+saved_bs_SP <- saved_bs_results
+write.csv(saved_bs_SP, "saved_bs_SP.csv", row.names = FALSE)
+saved_bs_SP_raw <- saved_bs_results_raw
+write.csv(saved_bs_SP_raw, "saved_bs_SP_raw.csv", row.names = FALSE)
+saved_im_SP <- saved_implied_means
+write.csv(saved_im_SP, "saved_im_SP.csv", row.names = FALSE)
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+```{r, out.width="67%", fig.cap="Dependent variable values for each reach by block and learning feedback, for variable Normalized Spatial Path Error.\\label{fig:replimreachplot6}"}
+prelim_plot_reaches
+```
+
+```{r}
+kable(list(AICtab_saved,residual_summary_saved,FE_saved,RanEff_saved,Cor_FE_saved),
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Summary information from LMM fit to full set of reaches, for variable Normalized Spatial Path Error.\\label{tab:summary_LMM_full6}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r}
+kable(FEestimates_saved,
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 4, 
+      caption = "Unscaled fixed-effect estimates from LMM fit to full set of reaches, for variable Normalized Spatial Path Error.\\label{tab:FEest_unscaled6}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r, out.width="95%", fig.cap="Actual and predicted values for LMM fitted to full data, for variable Normalized Spatial Path Error.\\label{fig:predictedLMMfull6}"}
+suppressWarnings(
+wrap_plots(Predicted_values_plot_reaches_saved, Predicted_values_plot_pmeans_saved, widths = c(1.5,2), ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Residual diagnostic plots for the LMM fit to the full data, for variable Normalized Spatial Path Error.\\label{fig:RdiagnosticsLMMfull6}"}
+residuals_diagnostics_plot_saved
+```
+
+```{r, out.width="67%", fig.cap="Random variable diagnostic plots for the LMM fit to the full data, for variable Normalized Spatial Path Error.\\label{fig:RVdiagnosticsLMMfull6}"}
+random_variable_diagnostics_plot_saved
+```
+
+```{r, out.width="95%", fig.cap="Nonparametric bootstrap results, for variable Normalized Spatial Path Error.\\label{fig:bsresults6}"}
+suppressWarnings(
+wrap_plots(BS_CI_plot_saved, BS_IM_plot_saved, ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Distribution of MSE among LMM fit to bootstrapped data, for variable Normalized Spatial Path Error.\\label{fig:BSmseHist6}"}
+suppressWarnings(
+BS_MSE_diagnostics_plot_saved
+)
+```
+
+## LLM Simulations
+
+\begin{multicols}{2}
+
+As a final check that our LMMs were behaving as expected, we reconstructed (simulated) the data from spatial target error using an LMM, using the estimated fixed effects $\beta$. For this simulation, we randomly generating 70 random effects $u$ with a nonnormal distribution (a weighted mix of skew and T-distributions) and normalized to the standard deviations (for intercept and slope) observed in the LMM fitted to the real STE data. We randomly generated residuals $\epsilon$ for the simulation with a fatten-tailed T-distribution (hence, no longer a T-distribution) and normalized to the same standard deviation as observed in the LMM fitted to the real STE data. We assigned the simulated random effects to participants and constructed design matrices for the fixed effects ($X$) and random effects ($Z$). We then simulated the spatial target error ($Y$) using the formula: 
+\begin{equation}
+Y = X\beta + Zu + \epsilon
+\end{equation}
+
+We compared the simulated data to the real data (Figure \ref{fig:boxrealvssim}). Next, with lme4 we fit a LMM to the simulated data using the same formula as before. We then compared the actual and predicted values for both the simulated data/ LMM fit and the real data/ LMM fit, for both individual reaches (Figure \ref{fig:reachesrealvssim}) and participant means (Figure \ref{fig:meansrealvssim}). After that we ran the same model diagnostics on the model fit to the simulated data (Figures \ref{fig:residsim} and \ref{fig:RVsim}) as were run on the model fit to the real data (Figures \ref{fig:residreal} and \ref{fig:RVreal}). 
+
+Finally, we did bootstrap estimates of the fixed effects based on an LMM (1000 resamples), and calculated p-values for the estimates, just as with the real study data (Table \ref{tab:simresults}). 
+
+\end{multicols}
+
+```{r counter_LMMsims}
+sec_num <- sec_num
+subsec_num <- subsec_num + 1
+fig_num <- 0
+```
+
+```{r LMMsimulations, include=print_all_R_output, linewidth=90}
+start_time_block <- Sys.time()
+
+# Simulate data with LMM based on STE
+source("rs4_script_LMMsim.R")
+
+end_time_block <- Sys.time()
+total_time_block <- end_time_block - start_time_block
+
+cat("\n\nBlock Start Time: ")
+print(start_time_block)
+cat("\nBlock End Time: ")
+print(end_time_block)
+cat("\nBlock Run Time: ")
+print(total_time_block)
+```
+
+```{r, out.width="95%", fig.cap="Dependent variable values for each reach by block and learning feedback, real data (STE, left) vs LMM-simulated (right) data.\\label{fig:boxrealvssim}"}
+STEprelim_plot_reaches <- STEprelim_plot_reaches + labs(title = "Reach NSTE (Real Data)") # Rename to fit in space
+suppressWarnings(
+wrap_plots(STEprelim_plot_reaches, prelim_plot_reaches, widths = c(1.5,2), ncol = 2)
+)
+```
+
+```{r, out.width="95%", fig.cap="Actual and predicted values for LMM fitted to full data (reaches), real data (STE, left) vs LMM-simulated (right) data.\\label{fig:reachesrealvssim}"}
+suppressWarnings(
+wrap_plots(STEPredicted_values_plot_reaches_saved, Predicted_values_plot_reaches_saved, widths = c(1.5,2), ncol = 2)
+)
+```
+
+```{r, out.width="95%", fig.cap="Actual and predicted values for LMM fitted to full data (means), real data (STE, left) vs LMM-simulated (right) data.\\label{fig:meansrealvssim}"}
+suppressWarnings(
+wrap_plots(STEPredicted_values_plot_pmeans_saved, Predicted_values_plot_pmeans_saved, widths = c(1.5,2), ncol = 2)
+)
+```
+
+```{r, out.width="67%", fig.cap="Residual diagnostic plots for the LMM fit to the full data, real data (STE).\\label{fig:residreal}"}
+suppressWarnings(
+STEresiduals_diagnostics_plot_saved
+)
+```
+
+```{r, out.width="67%", fig.cap="Residual diagnostic plots for the LMM fit to the full data, LMM-simulated data.\\label{fig:residsim}"}
+suppressWarnings(
+residuals_diagnostics_plot_saved
+)
+```
+
+```{r, out.width="67%", fig.cap="Random variable diagnostic plots for the LMM fit to the full data, real data (STE).\\label{fig:RVreal}"}
+suppressWarnings(
+STErandom_variable_diagnostics_plot_saved
+)
+```
+
+```{r, out.width="67%", fig.cap="Random variable diagnostic plots for the LMM fit to the full data, LMM-simulated data.\\label{fig:RVsim}"}
+suppressWarnings(
+random_variable_diagnostics_plot_saved
+)
+```
+
+```{r}
+kable(sim_results,
+      format = "latex",
+      booktabs = TRUE,
+      escape = FALSE,
+      digits = 3, 
+      row.names = TRUE,
+      caption = "Stipulated and estimated fixed effects (simulations based on STE data) using LMM method, with p-values.\\label{tab:simresults}") %>%
+  kable_styling(latex_options = "hold_position")
+```
+
+```{r save_processed_dataframes, include=FALSE}
+write.csv(motionSU,
+          "reach-study-4-motionSU-final.csv",
+          row.names=FALSE)
+write.csv(motionOT,
+          "reach-study-4-motionOT-final.csv",
+          row.names=FALSE)
+write.csv(rTable,
+          "reach-study-4-rTable-final.csv",
+          row.names=FALSE)
+write.csv(pTable,
+          "reach-study-4-pTable-final.csv",
+          row.names=FALSE)
+```
+
+```{r knit_time}
+end_time <- Sys.time()
+total_time <- end_time - start_time
+
+cat("Knit Start Time: ")
+print(start_time)
+
+cat("\nKnit End Time: ")
+print(end_time)
+
+cat("\nKnit Run Time: ")
+print(total_time)
+```
+
+```{r}
+1 + 1
+knitr::knit_exit()
+```
